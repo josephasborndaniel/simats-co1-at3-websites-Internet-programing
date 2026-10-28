@@ -2,6 +2,8 @@
 ## Five Interactive Case Study Websites for Internet Programming (CSA4315)
 
 **Institution:** SIMATS Engineering  
+**Student Name:** Joseph Asborn Daniel J  
+**Register Number:** 192324009  
 **Course:** Internet Programming  
 **Course Code:** CSA4315  
 **Assessment:** CO1 – Assessment Tool 3  
@@ -82,4 +84,4 @@ No build tools or web servers are required. Simply open `index.html` directly in
 
 ---
 
-*Submitted for CSA4315 Internet Programming CO1 Assessment Tool 3 — SIMATS Engineering.*
+*Submitted by **Joseph Asborn Daniel J** (Reg No: **192324009**) for CSA4315 Internet Programming CO1 Assessment Tool 3 — SIMATS Engineering.*

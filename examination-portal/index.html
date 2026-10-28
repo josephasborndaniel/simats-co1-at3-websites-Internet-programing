@@ -150,6 +150,10 @@
         <div class="sidebar-header">
             <div class="brand">📝 SIMATS Exams</div>
             <div class="course">CSA4315 · CO1 AT3</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:6px;line-height:1.4;background:rgba(255,255,255,0.1);padding:6px 10px;border-radius:6px;">
+                <div><strong>Joseph Asborn Daniel J</strong></div>
+                <div>Reg No: 192324009</div>
+            </div>
         </div>
         <div class="sidebar-nav">
             <button class="nav-item active" data-section="login" onclick="showSection('login')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Student Login</button>
@@ -182,14 +186,13 @@
                         <h2>🎓 Student Portal Login</h2>
                         <p class="login-sub">SIMATS Examination & Results System</p>
                         <div class="demo-creds">
-                            <strong>Demo Credentials:</strong><br>
-                            Student ID: <strong>CSE001</strong> · Password: <strong>demo123</strong><br>
-                            Student ID: <strong>ECE002</strong> · Password: <strong>demo123</strong><br>
-                            Student ID: <strong>IT003</strong> · Password: <strong>demo123</strong>
+                            <strong>Registered Student Credentials:</strong><br>
+                            Student ID: <strong>192324009</strong> · Password: <strong>demo123</strong> (Joseph Asborn Daniel J)<br>
+                            Student ID: <strong>CSE001</strong> · Password: <strong>demo123</strong>
                         </div>
                         <div class="form-group">
-                            <label>Student ID</label>
-                            <input type="text" id="loginId" placeholder="Enter Student ID" value="CSE001">
+                            <label>Student ID / Reg No</label>
+                            <input type="text" id="loginId" placeholder="Enter Student ID" value="192324009">
                         </div>
                         <div class="form-group">
                             <label>Password</label>
@@ -288,6 +291,7 @@
     <script>
     // ===== DATA =====
     const students = {
+        '192324009': {name:'Joseph Asborn Daniel J',dept:'Computer Science & Engineering',sem:'5th Semester',year:'III Year'},
         'CSE001': {name:'Arun Kumar',dept:'Computer Science',sem:'5th Semester',year:'III Year'},
         'ECE002': {name:'Priya Sharma',dept:'Electronics & Communication',sem:'5th Semester',year:'III Year'},
         'IT003': {name:'Vikram Raj',dept:'Information Technology',sem:'5th Semester',year:'III Year'}
