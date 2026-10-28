@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIMATS University Information Portal – CSA4315 CO1 Assessment Tool 3. Five interactive case study websites demonstrating web architecture concepts.">
+    <title>SIMATS University Information Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #123A63;
+            --secondary: #2463A0;
+            --accent: #0EA5E9;
+            --accent-teal: #14B8A6;
+            --bg: #F5F7FB;
+            --card-bg: #FFFFFF;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --shadow: 0 4px 24px rgba(18, 58, 99, 0.08);
+            --shadow-hover: 0 12px 40px rgba(18, 58, 99, 0.16);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(36, 99, 160, 0.08) 0%, transparent 70%);
+            top: -200px; right: -100px;
+            animation: float 20s ease-in-out infinite;
+        }
+        .bg-pattern::after {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.06) 0%, transparent 70%);
+            bottom: -150px; left: -100px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .university-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(18, 58, 99, 0.3);
+        }
+        .university-badge .icon {
+            width: 28px; height: 28px;
+        }
+
+        .header h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .header .subtitle {
+            font-size: 15px;
+            color: var(--text-light);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .header .subtitle .tag {
+            display: inline-block;
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* Cards grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 28px;
+            margin-bottom: 60px;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(18, 58, 99, 0.06);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out both;
+            display: flex;
+            flex-direction: column;
+        }
+        .project-card:nth-child(1) { animation-delay: 0.1s; }
+        .project-card:nth-child(2) { animation-delay: 0.2s; }
+        .project-card:nth-child(3) { animation-delay: 0.3s; }
+        .project-card:nth-child(4) { animation-delay: 0.4s; }
+        .project-card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .project-card:nth-child(1)::before { background: linear-gradient(90deg, #123A63, #2463A0); }
+        .project-card:nth-child(2)::before { background: linear-gradient(90deg, #0EA5E9, #06B6D4); }
+        .project-card:nth-child(3)::before { background: linear-gradient(90deg, #F59E0B, #EF4444); }
+        .project-card:nth-child(4)::before { background: linear-gradient(90deg, #10B981, #14B8A6); }
+        .project-card:nth-child(5)::before { background: linear-gradient(90deg, #8B5CF6, #6366F1); }
+
+        .project-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .project-card:nth-child(1) .card-icon { background: linear-gradient(135deg, rgba(18,58,99,0.1), rgba(36,99,160,0.15)); color: var(--primary); }
+        .project-card:nth-child(2) .card-icon { background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(6,182,212,0.15)); color: #0EA5E9; }
+        .project-card:nth-child(3) .card-icon { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.15)); color: #F59E0B; }
+        .project-card:nth-child(4) .card-icon { background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(20,184,166,0.15)); color: #10B981; }
+        .project-card:nth-child(5) .card-icon { background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(99,102,241,0.15)); color: #8B5CF6; }
+
+        .card-icon svg { width: 26px; height: 26px; }
+
+        .case-study-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .project-card:nth-child(1) .case-study-tag { background: rgba(18,58,99,0.08); color: var(--primary); }
+        .project-card:nth-child(2) .case-study-tag { background: rgba(14,165,233,0.08); color: #0284C7; }
+        .project-card:nth-child(3) .case-study-tag { background: rgba(245,158,11,0.08); color: #D97706; }
+        .project-card:nth-child(4) .case-study-tag { background: rgba(16,185,129,0.08); color: #059669; }
+        .project-card:nth-child(5) .case-study-tag { background: rgba(139,92,246,0.08); color: #7C3AED; }
+
+        .project-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .project-card p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .features-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 24px;
+        }
+        .features-list span {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--bg);
+            color: var(--text-light);
+        }
+
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            width: fit-content;
+        }
+        .project-card:nth-child(1) .card-btn { background: linear-gradient(135deg, #123A63, #2463A0); color: white; }
+        .project-card:nth-child(2) .card-btn { background: linear-gradient(135deg, #0EA5E9, #06B6D4); color: white; }
+        .project-card:nth-child(3) .card-btn { background: linear-gradient(135deg, #F59E0B, #EF4444); color: white; }
+        .project-card:nth-child(4) .card-btn { background: linear-gradient(135deg, #10B981, #14B8A6); color: white; }
+        .project-card:nth-child(5) .card-btn { background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; }
+
+        .card-btn:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .card-btn svg { width: 16px; height: 16px; }
+
+        /* Tech stack */
+        .tech-section {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s ease-out 0.6s both;
+        }
+        .tech-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+        }
+        .tech-pills {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tech-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .tech-pill:hover { transform: translateY(-2px); }
+        .tech-pill .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            border-top: 1px solid rgba(18, 58, 99, 0.08);
+            animation: fadeInUp 0.6s ease-out 0.7s both;
+        }
+        .footer p {
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+        .footer .highlight {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 24px 16px; }
+            .cards-grid { grid-template-columns: 1fr; gap: 20px; }
+            .project-card { padding: 24px; }
+            .header { margin-bottom: 40px; }
+        }
+
+        @media (max-width: 480px) {
+            .university-badge { font-size: 12px; padding: 10px 20px; }
+            .project-card h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="container">
+        <header class="header">
+            <div class="university-badge">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+                SIMATS Engineering
+            </div>
+            <h1>SIMATS University Information Portal</h1>
+            <p class="subtitle">
+                CSA4315 · CO1 Assessment Tool 3 · HTML-only interactive case study
+                <br>
+                <span class="tag">Internet Programming – Five Interactive Case Studies</span>
+            </p>
+        </header>
+
+        <div class="cards-grid">
+            <!-- Card 1: College Portal -->
+            <div class="project-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                <span class="case-study-tag">Case Study 31</span>
+                <h2>College Information Portal</h2>
+                <p>Professional university portal with faculty directory, department info, announcements, exam notifications, event calendar, and interactive LAMP architecture visualization.</p>
+                <div class="features-list">
+                    <span>Dashboard</span>
+                    <span>Faculty Search</span>
+                    <span>LAMP Demo</span>
+                    <span>Events</span>
+                    <span>Announcements</span>
+                </div>
+                <a href="college-portal/index.html" class="card-btn" id="btn-college-portal">
+                    Open Website
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Card 2: Library Management -->
+            <div class="project-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                    </svg>
+                </div>
+                <span class="case-study-tag">Case Study 32</span>
+                <h2>Library Management System</h2>
+                <p>Interactive library dashboard with book catalogue, search, issue/return system, borrowing history, library statistics, and WAMP architecture demonstration with port-conflict troubleshooting.</p>
+                <div class="features-list">
+                    <span>Book Catalogue</span>
+                    <span>Issue/Return</span>
+                    <span>WAMP Demo</span>
+                    <span>Port Conflict</span>
+                    <span>localStorage</span>
+                </div>
+                <a href="library-management/index.html" class="card-btn" id="btn-library-management">
+                    Open Website
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Card 3: Examination Portal -->
+            <div class="project-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/>
+                    </svg>
+                </div>
+                <span class="case-study-tag">Case Studies 33 & 36</span>
+                <h2>Examination & Results Portal</h2>
+                <p>Realistic exam portal with student login, timetable, results lookup, GPA/CGPA calculator, HTTP status-code troubleshooting, and server performance monitoring dashboard.</p>
+                <div class="features-list">
+                    <span>Student Login</span>
+                    <span>Results</span>
+                    <span>GPA/CGPA</span>
+                    <span>HTTP Codes</span>
+                    <span>Performance</span>
+                </div>
+                <a href="examination-portal/index.html" class="card-btn" id="btn-examination-portal">
+                    Open Website
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Card 4: Campus Store -->
+            <div class="project-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+                    </svg>
+                </div>
+                <span class="case-study-tag">Case Study 34</span>
+                <h2>Secure Campus Store</h2>
+                <p>Modern e-commerce demo for a university campus store with product catalogue, shopping cart, checkout simulation, order history, and HTTPS security concepts dashboard.</p>
+                <div class="features-list">
+                    <span>Product Catalog</span>
+                    <span>Shopping Cart</span>
+                    <span>Checkout</span>
+                    <span>HTTPS Demo</span>
+                    <span>Order History</span>
+                </div>
+                <a href="campus-store/index.html" class="card-btn" id="btn-campus-store">
+                    Open Website
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Card 5: University Admin -->
+            <div class="project-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/>
+                    </svg>
+                </div>
+                <span class="case-study-tag">Case Studies 35, 37–40</span>
+                <h2>Administration & Network Portal</h2>
+                <p>University administration dashboard with student records, admissions, network architecture visualization, DNS simulator, HTTP request-response demo, and scalability planning.</p>
+                <div class="features-list">
+                    <span>Student Records</span>
+                    <span>DNS Simulator</span>
+                    <span>Network Viz</span>
+                    <span>SMTP/SFTP</span>
+                    <span>Scaling</span>
+                </div>
+                <a href="university-admin/index.html" class="card-btn" id="btn-university-admin">
+                    Open Website
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <div class="tech-section">
+            <h3>Technology Stack</h3>
+            <div class="tech-pills">
+                <div class="tech-pill"><span class="dot" style="background:#E44D26"></span>HTML5</div>
+                <div class="tech-pill"><span class="dot" style="background:#2965F1"></span>CSS3</div>
+                <div class="tech-pill"><span class="dot" style="background:#F7DF1E"></span>JavaScript</div>
+                <div class="tech-pill"><span class="dot" style="background:#10B981"></span>localStorage</div>
+                <div class="tech-pill"><span class="dot" style="background:#8B5CF6"></span>Responsive Design</div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>
+                <span class="highlight">SIMATS University Information Portal</span><br>
+                CSA4315 · Internet Programming · CO1 Assessment Tool 3<br>
+                SIMATS Engineering &middot; Academic Demonstration Project
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

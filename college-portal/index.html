@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIMATS College Information Portal – Case Study 31: LAMP Architecture Demonstration">
+    <title>College Information Portal – SIMATS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--primary:#123A63;--secondary:#2463A0;--accent:#0EA5E9;--accent-teal:#14B8A6;--bg:#F5F7FB;--card:#fff;--text:#1E293B;--text-light:#64748B;--border:#E2E8F0;--shadow:0 4px 24px rgba(18,58,99,.08);--radius:14px;--transition:all .3s cubic-bezier(.4,0,.2,1)}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+        /* Sidebar */
+        .sidebar{width:260px;background:linear-gradient(180deg,var(--primary),#0F2D4D);color:#fff;padding:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s ease}
+        .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+        .sidebar-header .brand{font-size:14px;font-weight:700;letter-spacing:.5px}
+        .sidebar-header .course{font-size:11px;opacity:.7;margin-top:4px}
+        .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);transition:var(--transition);margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+        .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.12);color:#fff}
+        .nav-item.active{background:rgba(14,165,233,.25);color:#fff}
+        .nav-item svg{width:18px;height:18px;flex-shrink:0}
+        .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.5;text-align:center}
+        .sidebar-footer a{color:rgba(255,255,255,.7);text-decoration:none}
+        .sidebar-footer a:hover{color:#fff}
+
+        /* Main */
+        .main{margin-left:260px;flex:1;min-height:100vh;padding:0}
+        .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+        .topbar h2{font-size:18px;font-weight:700;color:var(--text)}
+        .topbar .demo-badge{font-size:11px;font-weight:600;padding:5px 14px;background:rgba(245,158,11,.1);color:#D97706;border-radius:20px}
+        .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
+        .menu-toggle svg{width:24px;height:24px;color:var(--text)}
+
+        .content{padding:28px 32px}
+
+        /* Stats */
+        .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:32px}
+        .stat-card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);transition:var(--transition)}
+        .stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(18,58,99,.12)}
+        .stat-card .label{font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px}
+        .stat-card .value{font-size:32px;font-weight:800;margin-top:6px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .stat-card .sub{font-size:12px;color:var(--text-light);margin-top:4px}
+
+        /* Section */
+        .section{margin-bottom:32px}
+        .section-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .section-title svg{width:20px;height:20px;color:var(--accent)}
+
+        /* Search */
+        .search-box{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+        .search-input{flex:1;min-width:200px;padding:10px 16px;border:2px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;transition:var(--transition);background:var(--card)}
+        .search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+        .filter-btn{padding:10px 20px;border:2px solid var(--border);border-radius:10px;background:var(--card);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:var(--transition)}
+        .filter-btn:hover,.filter-btn.active{border-color:var(--accent);background:rgba(14,165,233,.06);color:var(--accent)}
+
+        /* Table */
+        .table-wrap{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(0,0,0,.04)}
+        table{width:100%;border-collapse:collapse}
+        th{background:var(--bg);padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+        td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text)}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:rgba(14,165,233,.03)}
+        .dept-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
+        .dept-cse{background:rgba(14,165,233,.1);color:#0284C7}
+        .dept-ece{background:rgba(139,92,246,.1);color:#7C3AED}
+        .dept-mech{background:rgba(245,158,11,.1);color:#D97706}
+        .dept-civil{background:rgba(16,185,129,.1);color:#059669}
+        .dept-it{background:rgba(236,72,153,.1);color:#DB2777}
+        .dept-bio{background:rgba(234,88,12,.1);color:#C2410C}
+
+        /* Cards grid */
+        .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+        .info-card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);transition:var(--transition)}
+        .info-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(18,58,99,.12)}
+        .info-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+        .info-card p{font-size:13px;color:var(--text-light);line-height:1.6}
+        .info-card .tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:10px}
+
+        /* Announcements */
+        .announcement{display:flex;gap:16px;padding:16px;background:var(--card);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow);border-left:4px solid;transition:var(--transition)}
+        .announcement:hover{transform:translateX(4px)}
+        .announcement.urgent{border-left-color:#EF4444}
+        .announcement.info{border-left-color:var(--accent)}
+        .announcement.event{border-left-color:#10B981}
+        .announcement .ann-date{font-size:11px;color:var(--text-light);white-space:nowrap;min-width:80px}
+        .announcement .ann-content h4{font-size:14px;font-weight:600;margin-bottom:4px}
+        .announcement .ann-content p{font-size:12px;color:var(--text-light)}
+        .ann-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+        .ann-type-badge.urgent{background:rgba(239,68,68,.1);color:#DC2626}
+        .ann-type-badge.info{background:rgba(14,165,233,.1);color:#0284C7}
+        .ann-type-badge.event{background:rgba(16,185,129,.1);color:#059669}
+
+        /* Calendar */
+        .calendar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+        .event-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:3px solid var(--accent);transition:var(--transition)}
+        .event-card:hover{transform:translateY(-2px)}
+        .event-card .ev-date{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px}
+        .event-card h4{font-size:14px;font-weight:600;margin-bottom:4px}
+        .event-card p{font-size:12px;color:var(--text-light)}
+
+        /* LAMP visualization */
+        .lamp-demo{background:var(--card);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04)}
+        .lamp-note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px}
+        .lamp-note svg{width:20px;height:20px;flex-shrink:0;color:#D97706}
+        .lamp-flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:24px 0}
+        .lamp-box{padding:18px 24px;border-radius:12px;text-align:center;min-width:140px;transition:var(--transition);cursor:default;position:relative}
+        .lamp-box .lamp-icon{font-size:28px;margin-bottom:6px}
+        .lamp-box .lamp-label{font-size:13px;font-weight:700}
+        .lamp-box .lamp-desc{font-size:11px;opacity:.7;margin-top:2px}
+        .lamp-linux{background:linear-gradient(135deg,#FEF3C7,#FDE68A);color:#92400E}
+        .lamp-apache{background:linear-gradient(135deg,#DBEAFE,#93C5FD);color:#1E40AF}
+        .lamp-mysql{background:linear-gradient(135deg,#D1FAE5,#6EE7B7);color:#065F46}
+        .lamp-php{background:linear-gradient(135deg,#EDE9FE,#C4B5FD);color:#5B21B6}
+        .lamp-arrow{font-size:24px;color:var(--text-light);padding:0 8px;display:flex;align-items:center}
+        .lamp-arrow svg{width:28px;height:28px}
+
+        .lamp-box.highlight{transform:scale(1.08);box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:2}
+
+        /* HTTP Demo */
+        .http-demo{margin-top:24px}
+        .http-steps{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+        .http-step{display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--bg);border-radius:10px;opacity:.3;transform:translateX(-20px);transition:all .5s ease}
+        .http-step.visible{opacity:1;transform:translateX(0)}
+        .http-step .step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+        .http-step:nth-child(1) .step-num{background:var(--primary)}
+        .http-step:nth-child(2) .step-num{background:var(--secondary)}
+        .http-step:nth-child(3) .step-num{background:var(--accent)}
+        .http-step:nth-child(4) .step-num{background:var(--accent-teal)}
+        .http-step:nth-child(5) .step-num{background:#8B5CF6}
+        .http-step .step-text{font-size:13px;font-weight:500}
+        .http-step .step-detail{font-size:11px;color:var(--text-light)}
+
+        .btn{padding:10px 22px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition)}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(18,58,99,.3)}
+        .btn-outline{background:transparent;border:2px solid var(--border);color:var(--text)}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+
+        .hidden{display:none!important}
+
+        /* Toast */
+        .toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 24px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(100px);opacity:0;transition:var(--transition)}
+        .toast.show{transform:translateY(0);opacity:1}
+
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:var(--transition)}
+        .modal-overlay.show{opacity:1;pointer-events:all}
+        .modal{background:var(--card);border-radius:var(--radius);padding:32px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;transform:scale(.9);transition:var(--transition)}
+        .modal-overlay.show .modal{transform:scale(1)}
+        .modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+        .modal p{font-size:13px;color:var(--text-light);line-height:1.7;margin-bottom:12px}
+        .modal-close{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);padding:4px}
+
+        .empty-state{text-align:center;padding:48px;color:var(--text-light)}
+        .empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.4}
+        .empty-state p{font-size:14px}
+
+        @media(max-width:768px){
+            .sidebar{transform:translateX(-100%)}
+            .sidebar.open{transform:translateX(0)}
+            .main{margin-left:0}
+            .menu-toggle{display:block}
+            .content{padding:20px 16px}
+            .topbar{padding:12px 16px}
+            .stats-row{grid-template-columns:repeat(2,1fr)}
+            .lamp-flow{flex-direction:column}
+            .lamp-arrow{transform:rotate(90deg)}
+        }
+        @media(max-width:480px){
+            .stats-row{grid-template-columns:1fr}
+            .search-box{flex-direction:column}
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">🎓 SIMATS University</div>
+            <div class="course">CSA4315 · CO1 AT3</div>
+        </div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" data-section="faculty" onclick="showSection('faculty')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Faculty Directory
+            </button>
+            <button class="nav-item" data-section="departments" onclick="showSection('departments')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                Departments
+            </button>
+            <button class="nav-item" data-section="announcements" onclick="showSection('announcements')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                Announcements
+            </button>
+            <button class="nav-item" data-section="exams" onclick="showSection('exams')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                Examinations
+            </button>
+            <button class="nav-item" data-section="calendar" onclick="showSection('calendar')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                Event Calendar
+            </button>
+            <button class="nav-item" data-section="lamp" onclick="showSection('lamp')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                LAMP Architecture
+            </button>
+        </div>
+        <div class="sidebar-footer">
+            <a href="../index.html">← Back to Portal Home</a>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="topbar">
+            <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            </button>
+            <h2 id="pageTitle">Dashboard</h2>
+            <span class="demo-badge">⚡ Simulation Mode</span>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard -->
+            <div id="sec-dashboard" class="section-page">
+                <div class="stats-row">
+                    <div class="stat-card"><div class="label">Total Students</div><div class="value">8,420</div><div class="sub">Across all departments</div></div>
+                    <div class="stat-card"><div class="label">Faculty Members</div><div class="value">342</div><div class="sub">Teaching & Research</div></div>
+                    <div class="stat-card"><div class="label">Departments</div><div class="value">6</div><div class="sub">Engineering & Sciences</div></div>
+                    <div class="stat-card"><div class="label">Active Courses</div><div class="value">1,250</div><div class="sub">Current semester</div></div>
+                </div>
+                <div class="section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+                        Recent Announcements
+                    </div>
+                    <div id="dashAnnouncements"></div>
+                </div>
+                <div class="section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        Upcoming Events
+                    </div>
+                    <div class="calendar-grid" id="dashEvents"></div>
+                </div>
+            </div>
+
+            <!-- Faculty Directory -->
+            <div id="sec-faculty" class="section-page hidden">
+                <div class="section">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="facultySearch" placeholder="Search faculty by name or department..." oninput="filterFaculty()">
+                        <button class="filter-btn active" data-dept="all" onclick="setDeptFilter('all',this)">All</button>
+                        <button class="filter-btn" data-dept="CSE" onclick="setDeptFilter('CSE',this)">CSE</button>
+                        <button class="filter-btn" data-dept="ECE" onclick="setDeptFilter('ECE',this)">ECE</button>
+                        <button class="filter-btn" data-dept="MECH" onclick="setDeptFilter('MECH',this)">MECH</button>
+                        <button class="filter-btn" data-dept="CIVIL" onclick="setDeptFilter('CIVIL',this)">CIVIL</button>
+                        <button class="filter-btn" data-dept="IT" onclick="setDeptFilter('IT',this)">IT</button>
+                        <button class="filter-btn" data-dept="BIO" onclick="setDeptFilter('BIO',this)">BIO</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Name</th><th>Department</th><th>Designation</th><th>Specialization</th><th>Action</th></tr></thead>
+                            <tbody id="facultyTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state hidden" id="facultyEmpty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <p>No faculty members match your search.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Departments -->
+            <div id="sec-departments" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>
+                        Academic Departments
+                    </div>
+                    <div class="cards-grid" id="deptGrid"></div>
+                </div>
+            </div>
+
+            <!-- Announcements -->
+            <div id="sec-announcements" class="section-page hidden">
+                <div class="section">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="annSearch" placeholder="Search announcements..." oninput="filterAnnouncements()">
+                        <button class="filter-btn active" data-type="all" onclick="setAnnFilter('all',this)">All</button>
+                        <button class="filter-btn" data-type="urgent" onclick="setAnnFilter('urgent',this)">Urgent</button>
+                        <button class="filter-btn" data-type="info" onclick="setAnnFilter('info',this)">Info</button>
+                        <button class="filter-btn" data-type="event" onclick="setAnnFilter('event',this)">Events</button>
+                    </div>
+                    <div id="announcementsList"></div>
+                </div>
+            </div>
+
+            <!-- Examinations -->
+            <div id="sec-exams" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                        Upcoming Examinations
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Subject</th><th>Code</th><th>Date</th><th>Time</th><th>Venue</th><th>Status</th></tr></thead>
+                            <tbody id="examTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Calendar -->
+            <div id="sec-calendar" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        Academic Event Calendar
+                    </div>
+                    <div class="calendar-grid" id="fullCalendar"></div>
+                </div>
+            </div>
+
+            <!-- LAMP Architecture -->
+            <div id="sec-lamp" class="section-page hidden">
+                <div class="lamp-demo">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                        LAMP Architecture Visualization
+                    </div>
+                    <div class="lamp-note">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        <strong>Simulation Notice:</strong>&nbsp;This is an educational demonstration. This website uses only HTML, CSS, and JavaScript. No actual LAMP server is running.
+                    </div>
+
+                    <h4 style="margin-bottom:8px;font-size:14px">LAMP Stack Components</h4>
+                    <div class="lamp-flow" id="lampFlow">
+                        <div class="lamp-box lamp-linux" id="lb-linux">
+                            <div class="lamp-icon">🐧</div>
+                            <div class="lamp-label">Linux</div>
+                            <div class="lamp-desc">Operating System</div>
+                        </div>
+                        <div class="lamp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+                        <div class="lamp-box lamp-apache" id="lb-apache">
+                            <div class="lamp-icon">🌐</div>
+                            <div class="lamp-label">Apache</div>
+                            <div class="lamp-desc">Web Server</div>
+                        </div>
+                        <div class="lamp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+                        <div class="lamp-box lamp-mysql" id="lb-mysql">
+                            <div class="lamp-icon">🗄️</div>
+                            <div class="lamp-label">MySQL</div>
+                            <div class="lamp-desc">Database</div>
+                        </div>
+                        <div class="lamp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+                        <div class="lamp-box lamp-php" id="lb-php">
+                            <div class="lamp-icon">🔧</div>
+                            <div class="lamp-label">PHP</div>
+                            <div class="lamp-desc">Scripting Language</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin:20px 0">
+                        <button class="btn btn-primary" onclick="animateLAMP()">▶ Animate LAMP Flow</button>
+                        <button class="btn btn-outline" onclick="showHTTPDemo()">Show HTTP Request-Response</button>
+                    </div>
+
+                    <div id="lampDescription" style="background:var(--bg);border-radius:10px;padding:18px;margin-top:12px">
+                        <p style="font-size:13px;color:var(--text-light);line-height:1.7">
+                            The <strong>LAMP</strong> stack is a popular open-source web development platform: <strong>L</strong>inux (OS), <strong>A</strong>pache (Web Server), <strong>M</strong>ySQL (Database), and <strong>P</strong>HP (Server-side Language). Click "Animate LAMP Flow" to see how a request travels through each component.
+                        </p>
+                    </div>
+
+                    <!-- HTTP Demo -->
+                    <div id="httpDemoSection" class="http-demo hidden">
+                        <h4 style="margin-bottom:4px;font-size:14px">HTTP Request-Response Process</h4>
+                        <p style="font-size:12px;color:var(--text-light);margin-bottom:12px">(Simulated demonstration)</p>
+                        <div class="http-steps" id="httpSteps">
+                            <div class="http-step"><div class="step-num">1</div><div><div class="step-text">Client sends HTTP GET request</div><div class="step-detail">Browser → GET /college-portal HTTP/1.1 → Apache Server</div></div></div>
+                            <div class="http-step"><div class="step-num">2</div><div><div class="step-text">Apache receives and routes the request</div><div class="step-detail">Apache checks configuration, matches URL to PHP script</div></div></div>
+                            <div class="http-step"><div class="step-num">3</div><div><div class="step-text">PHP processes business logic</div><div class="step-detail">PHP script executes, queries MySQL for college data</div></div></div>
+                            <div class="http-step"><div class="step-num">4</div><div><div class="step-text">MySQL returns data</div><div class="step-detail">Database returns faculty, departments, announcements</div></div></div>
+                            <div class="http-step"><div class="step-num">5</div><div><div class="step-text">HTTP 200 OK Response</div><div class="step-detail">Apache sends HTML response back to client browser</div></div></div>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top:16px" onclick="replayHTTP()">🔄 Replay Animation</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle"></h3>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ===== DATA =====
+    const facultyData = [
+        {name:"Dr. Rajesh Kumar",dept:"CSE",designation:"Professor & HOD",spec:"Machine Learning, Data Science"},
+        {name:"Dr. Priya Sharma",dept:"CSE",designation:"Associate Professor",spec:"Cloud Computing, IoT"},
+        {name:"Dr. Arun Venkatesh",dept:"CSE",designation:"Assistant Professor",spec:"Cybersecurity, Networks"},
+        {name:"Prof. Meena Lakshmi",dept:"CSE",designation:"Assistant Professor",spec:"Web Technologies, Databases"},
+        {name:"Dr. Karthik Rajan",dept:"ECE",designation:"Professor & HOD",spec:"VLSI Design, Signal Processing"},
+        {name:"Dr. Shalini Nair",dept:"ECE",designation:"Associate Professor",spec:"Embedded Systems, IoT"},
+        {name:"Prof. Vijay Kumar",dept:"ECE",designation:"Assistant Professor",spec:"Communication Systems"},
+        {name:"Dr. Suresh Babu",dept:"MECH",designation:"Professor & HOD",spec:"Thermal Engineering, CAD/CAM"},
+        {name:"Dr. Anitha Devi",dept:"MECH",designation:"Associate Professor",spec:"Manufacturing, Robotics"},
+        {name:"Prof. Ganesh Prabhu",dept:"MECH",designation:"Assistant Professor",spec:"Finite Element Analysis"},
+        {name:"Dr. Lakshmi Priya",dept:"CIVIL",designation:"Professor & HOD",spec:"Structural Engineering"},
+        {name:"Dr. Mohan Raj",dept:"CIVIL",designation:"Associate Professor",spec:"Environmental Engineering"},
+        {name:"Dr. Deepa Sundaram",dept:"IT",designation:"Professor & HOD",spec:"AI, Software Engineering"},
+        {name:"Prof. Ramya Krishnan",dept:"IT",designation:"Assistant Professor",spec:"Web Development, UX"},
+        {name:"Dr. Naveen Balaji",dept:"BIO",designation:"Professor & HOD",spec:"Biomedical Instrumentation"},
+        {name:"Dr. Preethi Menon",dept:"BIO",designation:"Associate Professor",spec:"Bioinformatics, Genetics"}
+    ];
+
+    const departments = [
+        {code:"CSE",name:"Computer Science & Engineering",students:1820,faculty:48,hod:"Dr. Rajesh Kumar",desc:"Cutting-edge programs in AI, ML, cloud computing, cybersecurity, and full-stack development."},
+        {code:"ECE",name:"Electronics & Communication Engineering",students:1540,faculty:42,hod:"Dr. Karthik Rajan",desc:"Advanced studies in VLSI, embedded systems, signal processing, and wireless communications."},
+        {code:"MECH",name:"Mechanical Engineering",students:1380,faculty:38,hod:"Dr. Suresh Babu",desc:"Programs covering thermal engineering, CAD/CAM, robotics, and manufacturing technology."},
+        {code:"CIVIL",name:"Civil Engineering",students:1120,faculty:32,hod:"Dr. Lakshmi Priya",desc:"Structural, environmental, geotechnical, and transportation engineering disciplines."},
+        {code:"IT",name:"Information Technology",students:1460,faculty:40,hod:"Dr. Deepa Sundaram",desc:"Software engineering, web technologies, AI applications, and data analytics."},
+        {code:"BIO",name:"Biomedical Engineering",students:1100,faculty:30,hod:"Dr. Naveen Balaji",desc:"Biomedical instrumentation, bioinformatics, medical imaging, and biotechnology."}
+    ];
+
+    const announcements = [
+        {type:"urgent",date:"2026-10-28",title:"Mid-Semester Examination Schedule Released",desc:"Download the mid-semester examination timetable from the examination portal. All students must carry valid ID cards."},
+        {type:"info",date:"2026-10-27",title:"New Library Resources Available",desc:"Over 500 new digital journals and e-books have been added to the university library database."},
+        {type:"event",date:"2026-10-26",title:"Annual Tech Symposium – TechSIMATZ 2026",desc:"Register for the annual technology symposium featuring keynote speakers from leading tech companies."},
+        {type:"urgent",date:"2026-10-25",title:"Fee Payment Deadline Extended",desc:"The last date for semester fee payment has been extended to November 15, 2026."},
+        {type:"info",date:"2026-10-24",title:"Campus Placement Drive – Infosys",desc:"Infosys campus recruitment drive for CSE and IT students on November 5, 2026."},
+        {type:"event",date:"2026-10-23",title:"Guest Lecture: AI in Healthcare",desc:"Dr. Sarah Chen from Stanford will deliver a guest lecture on AI applications in healthcare."},
+        {type:"info",date:"2026-10-22",title:"Research Paper Submission Deadline",desc:"Submit research papers for the International Conference on Computing by November 20."},
+        {type:"urgent",date:"2026-10-21",title:"Hostel Maintenance Notice",desc:"Block-C hostel maintenance scheduled for October 30-31. Affected students please note alternative arrangements."}
+    ];
+
+    const events = [
+        {date:"Nov 2, 2026",title:"TechSIMATZ 2026 – Opening Ceremony",desc:"Annual technology symposium kickoff with keynote by industry leaders.",category:"Symposium"},
+        {date:"Nov 5, 2026",title:"Infosys Campus Placement",desc:"On-campus recruitment for CSE and IT final year students.",category:"Placement"},
+        {date:"Nov 10, 2026",title:"Guest Lecture: AI in Healthcare",desc:"Guest lecture by Dr. Sarah Chen from Stanford University.",category:"Lecture"},
+        {date:"Nov 15, 2026",title:"Mid-Semester Exams Begin",desc:"Mid-semester examinations for all departments commence.",category:"Examination"},
+        {date:"Nov 20, 2026",title:"Research Paper Deadline",desc:"Last date to submit papers for ICCC 2026.",category:"Research"},
+        {date:"Nov 25, 2026",title:"Sports Day",desc:"Annual inter-department sports competition.",category:"Sports"},
+        {date:"Dec 1, 2026",title:"Hackathon: Code for Campus",desc:"24-hour hackathon open to all engineering students.",category:"Event"},
+        {date:"Dec 10, 2026",title:"End-Semester Exams Begin",desc:"Final examinations for the current semester.",category:"Examination"}
+    ];
+
+    const exams = [
+        {subject:"Internet Programming",code:"CSA4315",date:"Nov 15, 2026",time:"10:00 AM",venue:"Hall A1",status:"Upcoming"},
+        {subject:"Data Structures",code:"CSA3210",date:"Nov 17, 2026",time:"10:00 AM",venue:"Hall A2",status:"Upcoming"},
+        {subject:"Database Management",code:"CSA4320",date:"Nov 19, 2026",time:"2:00 PM",venue:"Hall B1",status:"Upcoming"},
+        {subject:"Computer Networks",code:"CSA4318",date:"Nov 21, 2026",time:"10:00 AM",venue:"Hall A1",status:"Upcoming"},
+        {subject:"Operating Systems",code:"CSA3215",date:"Nov 23, 2026",time:"2:00 PM",venue:"Hall B2",status:"Upcoming"},
+        {subject:"Software Engineering",code:"CSA4325",date:"Nov 25, 2026",time:"10:00 AM",venue:"Hall A3",status:"Upcoming"}
+    ];
+
+    // ===== NAVIGATION =====
+    let currentSection = 'dashboard';
+    let currentDeptFilter = 'all';
+    let currentAnnFilter = 'all';
+
+    function showSection(id) {
+        document.querySelectorAll('.section-page').forEach(s => s.classList.add('hidden'));
+        document.getElementById('sec-' + id).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelector(`[data-section="${id}"]`).classList.add('active');
+        currentSection = id;
+        const titles = {dashboard:'Dashboard',faculty:'Faculty Directory',departments:'Departments',announcements:'Announcements',exams:'Examination Notifications',calendar:'Event Calendar',lamp:'LAMP Architecture'};
+        document.getElementById('pageTitle').textContent = titles[id] || 'Dashboard';
+        // Close sidebar on mobile
+        if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // ===== RENDER FUNCTIONS =====
+    function renderFaculty() {
+        const search = document.getElementById('facultySearch').value.toLowerCase();
+        const filtered = facultyData.filter(f => {
+            const matchSearch = f.name.toLowerCase().includes(search) || f.dept.toLowerCase().includes(search) || f.spec.toLowerCase().includes(search);
+            const matchDept = currentDeptFilter === 'all' || f.dept === currentDeptFilter;
+            return matchSearch && matchDept;
+        });
+        const tbody = document.getElementById('facultyTableBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            document.getElementById('facultyEmpty').classList.remove('hidden');
+            return;
+        }
+        document.getElementById('facultyEmpty').classList.add('hidden');
+        tbody.innerHTML = filtered.map(f => `
+            <tr>
+                <td><strong>${f.name}</strong></td>
+                <td><span class="dept-badge dept-${f.dept.toLowerCase()}">${f.dept}</span></td>
+                <td>${f.designation}</td>
+                <td>${f.spec}</td>
+                <td><button class="btn btn-outline" style="padding:6px 14px;font-size:12px" onclick="viewFaculty('${f.name}')">View</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function filterFaculty() { renderFaculty(); }
+    function setDeptFilter(dept, btn) {
+        currentDeptFilter = dept;
+        document.querySelectorAll('.search-box .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderFaculty();
+    }
+
+    function viewFaculty(name) {
+        const f = facultyData.find(x => x.name === name);
+        if (!f) return;
+        document.getElementById('modalTitle').textContent = f.name;
+        document.getElementById('modalContent').innerHTML = `
+            <p><strong>Department:</strong> ${f.dept}</p>
+            <p><strong>Designation:</strong> ${f.designation}</p>
+            <p><strong>Specialization:</strong> ${f.spec}</p>
+            <p style="margin-top:12px">This faculty profile is part of the SIMATS College Information Portal demonstration. In a real LAMP-based system, this data would be fetched from a MySQL database via PHP scripts running on an Apache web server.</p>
+        `;
+        document.getElementById('modal').classList.add('show');
+    }
+
+    function renderDepartments() {
+        document.getElementById('deptGrid').innerHTML = departments.map(d => `
+            <div class="info-card" onclick="viewDepartment('${d.code}')" style="cursor:pointer">
+                <span class="dept-badge dept-${d.code.toLowerCase()}" style="margin-bottom:12px">${d.code}</span>
+                <h3>${d.name}</h3>
+                <p>${d.desc}</p>
+                <div style="display:flex;gap:16px;margin-top:14px">
+                    <div style="font-size:12px"><strong style="font-size:18px;color:var(--primary)">${d.students}</strong><br><span style="color:var(--text-light)">Students</span></div>
+                    <div style="font-size:12px"><strong style="font-size:18px;color:var(--accent)">${d.faculty}</strong><br><span style="color:var(--text-light)">Faculty</span></div>
+                </div>
+                <div class="tag" style="background:var(--bg);color:var(--text-light)">HOD: ${d.hod}</div>
+            </div>
+        `).join('');
+    }
+
+    function viewDepartment(code) {
+        const d = departments.find(x => x.code === code);
+        if (!d) return;
+        document.getElementById('modalTitle').textContent = d.name;
+        const deptFaculty = facultyData.filter(f => f.dept === code);
+        document.getElementById('modalContent').innerHTML = `
+            <p>${d.desc}</p>
+            <p><strong>Head of Department:</strong> ${d.hod}</p>
+            <p><strong>Total Students:</strong> ${d.students}</p>
+            <p><strong>Faculty Strength:</strong> ${d.faculty}</p>
+            <h4 style="margin-top:16px;font-size:14px">Faculty Members:</h4>
+            <ul style="margin-top:8px;padding-left:20px">${deptFaculty.map(f => `<li style="font-size:13px;margin-bottom:4px">${f.name} – ${f.designation}</li>`).join('')}</ul>
+        `;
+        document.getElementById('modal').classList.add('show');
+    }
+
+    function renderAnnouncements(container, limit) {
+        const search = container === 'announcementsList' ? document.getElementById('annSearch').value.toLowerCase() : '';
+        let filtered = announcements.filter(a => {
+            const matchSearch = a.title.toLowerCase().includes(search) || a.desc.toLowerCase().includes(search);
+            const matchType = currentAnnFilter === 'all' || a.type === currentAnnFilter;
+            return matchSearch && matchType;
+        });
+        if (limit) filtered = filtered.slice(0, limit);
+        document.getElementById(container).innerHTML = filtered.map(a => `
+            <div class="announcement ${a.type}">
+                <div class="ann-date">${a.date}<br><span class="ann-type-badge ${a.type}">${a.type}</span></div>
+                <div class="ann-content">
+                    <h4>${a.title}</h4>
+                    <p>${a.desc}</p>
+                </div>
+            </div>
+        `).join('') || '<div class="empty-state"><p>No announcements match your filter.</p></div>';
+    }
+
+    function filterAnnouncements() { renderAnnouncements('announcementsList'); }
+    function setAnnFilter(type, btn) {
+        currentAnnFilter = type;
+        document.querySelectorAll('#sec-announcements .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderAnnouncements('announcementsList');
+    }
+
+    function renderExams() {
+        document.getElementById('examTableBody').innerHTML = exams.map(e => `
+            <tr>
+                <td><strong>${e.subject}</strong></td>
+                <td><code style="background:var(--bg);padding:2px 8px;border-radius:4px;font-size:12px">${e.code}</code></td>
+                <td>${e.date}</td>
+                <td>${e.time}</td>
+                <td>${e.venue}</td>
+                <td><span style="background:rgba(14,165,233,.1);color:#0284C7;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">${e.status}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderEvents(container, limit) {
+        let data = limit ? events.slice(0, limit) : events;
+        document.getElementById(container).innerHTML = data.map(e => `
+            <div class="event-card">
+                <div class="ev-date">📅 ${e.date}</div>
+                <h4>${e.title}</h4>
+                <p>${e.desc}</p>
+                <span style="display:inline-block;margin-top:8px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(14,165,233,.08);color:var(--accent)">${e.category}</span>
+            </div>
+        `).join('');
+    }
+
+    // ===== LAMP ANIMATION =====
+    let lampAnimating = false;
+    function animateLAMP() {
+        if (lampAnimating) return;
+        lampAnimating = true;
+        const boxes = ['lb-linux','lb-apache','lb-mysql','lb-php'];
+        boxes.forEach(b => document.getElementById(b).classList.remove('highlight'));
+        const desc = document.getElementById('lampDescription');
+        const descs = [
+            '<strong>Linux</strong> is the operating system that hosts the entire web stack. It provides the foundation for running Apache, MySQL, and PHP services reliably.',
+            '<strong>Apache</strong> is the web server that listens for incoming HTTP requests on port 80/443 and routes them to the appropriate PHP scripts.',
+            '<strong>MySQL</strong> is the relational database management system that stores and retrieves structured data like student records, faculty info, and course details.',
+            '<strong>PHP</strong> is the server-side scripting language that processes requests, executes business logic, queries MySQL, and generates HTML responses.'
+        ];
+        let i = 0;
+        function next() {
+            if (i > 0) document.getElementById(boxes[i-1]).classList.remove('highlight');
+            if (i >= boxes.length) {
+                desc.innerHTML = '<p style="font-size:13px;color:var(--text-light);line-height:1.7">✅ <strong>Complete!</strong> The request has been processed through all LAMP stack components. The response HTML is sent back to the client browser.</p>';
+                lampAnimating = false;
+                return;
+            }
+            document.getElementById(boxes[i]).classList.add('highlight');
+            desc.innerHTML = '<p style="font-size:13px;color:var(--text-light);line-height:1.7">' + descs[i] + '</p>';
+            i++;
+            setTimeout(next, 1500);
+        }
+        next();
+    }
+
+    function showHTTPDemo() {
+        document.getElementById('httpDemoSection').classList.remove('hidden');
+        replayHTTP();
+    }
+
+    function replayHTTP() {
+        const steps = document.querySelectorAll('.http-step');
+        steps.forEach(s => s.classList.remove('visible'));
+        steps.forEach((s, i) => {
+            setTimeout(() => s.classList.add('visible'), (i + 1) * 600);
+        });
+    }
+
+    // ===== MODAL =====
+    function closeModal() {
+        document.getElementById('modal').classList.remove('show');
+    }
+    document.getElementById('modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ===== TOAST =====
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ===== INIT =====
+    function init() {
+        renderFaculty();
+        renderDepartments();
+        renderAnnouncements('dashAnnouncements', 3);
+        renderAnnouncements('announcementsList');
+        renderExams();
+        renderEvents('dashEvents', 4);
+        renderEvents('fullCalendar');
+        showToast('Welcome to SIMATS College Portal');
+    }
+
+    init();
+    </script>
+</body>
+</html>

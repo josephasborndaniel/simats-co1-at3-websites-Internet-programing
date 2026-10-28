@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIMATS Secure Campus Store – Case Study 34: E-Commerce Security Demonstration">
+    <title>Secure Campus Store – SIMATS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--primary:#123A63;--secondary:#2463A0;--accent:#0EA5E9;--teal:#14B8A6;--bg:#F5F7FB;--card:#fff;--text:#1E293B;--text-light:#64748B;--border:#E2E8F0;--success:#10B981;--warning:#F59E0B;--danger:#EF4444;--shadow:0 4px 24px rgba(18,58,99,.08);--radius:14px;--transition:all .3s cubic-bezier(.4,0,.2,1)}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+        .sidebar{width:260px;background:linear-gradient(180deg,#065F46,#047857);color:#fff;position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform .3s ease}
+        .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+        .sidebar-header .brand{font-size:14px;font-weight:700}
+        .sidebar-header .course{font-size:11px;opacity:.7;margin-top:4px}
+        .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);transition:var(--transition);margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+        .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.12);color:#fff}
+        .nav-item.active{background:rgba(16,185,129,.3)}
+        .nav-item svg{width:18px;height:18px;flex-shrink:0}
+        .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.5;text-align:center}
+        .sidebar-footer a{color:rgba(255,255,255,.7);text-decoration:none}.sidebar-footer a:hover{color:#fff}
+        .main{margin-left:260px;flex:1;min-height:100vh}
+        .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .topbar h2{font-size:18px;font-weight:700}
+        .topbar-right{display:flex;align-items:center;gap:12px}
+        .demo-badge{font-size:11px;font-weight:600;padding:5px 14px;background:rgba(239,68,68,.08);color:#DC2626;border-radius:20px}
+        .cart-btn{position:relative;background:none;border:2px solid var(--border);border-radius:10px;padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:600;transition:var(--transition)}
+        .cart-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .cart-btn svg{width:18px;height:18px}
+        .cart-count{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}.menu-toggle svg{width:24px;height:24px;color:var(--text)}
+        .content{padding:28px 32px}
+        .hidden{display:none!important}
+        .section{margin-bottom:32px}
+        .section-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+        .search-box{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+        .search-input{flex:1;min-width:200px;padding:10px 16px;border:2px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;transition:var(--transition);background:var(--card)}
+        .search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+        .filter-btn{padding:10px 20px;border:2px solid var(--border);border-radius:10px;background:var(--card);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:var(--transition)}
+        .filter-btn:hover,.filter-btn.active{border-color:var(--teal);background:rgba(20,184,166,.06);color:var(--teal)}
+
+        .btn{padding:10px 22px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition)}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(18,58,99,.3)}
+        .btn-success{background:linear-gradient(135deg,#10B981,#14B8A6);color:#fff}
+        .btn-success:hover{box-shadow:0 4px 16px rgba(16,185,129,.3)}
+        .btn-danger{background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff}
+        .btn-outline{background:transparent;border:2px solid var(--border);color:var(--text)}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+        .btn-sm{padding:6px 14px;font-size:12px}
+
+        /* Product grid */
+        .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+        .product-card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);transition:var(--transition)}
+        .product-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(18,58,99,.12)}
+        .product-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative}
+        .product-card:nth-child(6n+1) .product-img{background:linear-gradient(135deg,#DBEAFE,#BFDBFE)}
+        .product-card:nth-child(6n+2) .product-img{background:linear-gradient(135deg,#D1FAE5,#A7F3D0)}
+        .product-card:nth-child(6n+3) .product-img{background:linear-gradient(135deg,#FEF3C7,#FDE68A)}
+        .product-card:nth-child(6n+4) .product-img{background:linear-gradient(135deg,#EDE9FE,#DDD6FE)}
+        .product-card:nth-child(6n+5) .product-img{background:linear-gradient(135deg,#FCE7F3,#FBCFE8)}
+        .product-card:nth-child(6n+6) .product-img{background:linear-gradient(135deg,#FFEDD5,#FED7AA)}
+        .product-body{padding:16px}
+        .product-body .cat{font-size:11px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.5px}
+        .product-body h3{font-size:14px;font-weight:700;margin:6px 0}
+        .product-body .price{font-size:20px;font-weight:800;color:var(--primary);margin:8px 0}
+        .product-body .stock{font-size:12px;color:var(--text-light);margin-bottom:12px}
+
+        /* Cart */
+        .cart-container{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+        .cart-item{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+        .cart-item:last-child{border-bottom:none}
+        .cart-item .ci-emoji{font-size:36px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:10px}
+        .cart-item .ci-info{flex:1}
+        .cart-item .ci-info h4{font-size:14px;font-weight:600}
+        .cart-item .ci-info p{font-size:12px;color:var(--text-light)}
+        .cart-item .ci-qty{display:flex;align-items:center;gap:8px}
+        .qty-btn{width:30px;height:30px;border:2px solid var(--border);border-radius:8px;background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+        .qty-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .cart-item .ci-price{font-size:16px;font-weight:700;color:var(--primary);min-width:80px;text-align:right}
+        .cart-item .ci-remove{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:4px}
+
+        .cart-summary{background:var(--bg);border-radius:12px;padding:20px;margin-top:20px}
+        .cart-summary .row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px}
+        .cart-summary .total{border-top:2px solid var(--border);padding-top:12px;font-size:18px;font-weight:800}
+
+        /* Checkout */
+        .checkout-card{background:var(--card);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);max-width:600px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+        .form-group input,.form-group select{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;transition:var(--transition)}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
+        .form-error{font-size:12px;color:var(--danger);margin-top:4px;display:none}
+
+        /* Order confirmation */
+        .order-success{text-align:center;padding:48px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
+        .order-success .check{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--success),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;color:#fff;animation:scaleIn .5s ease}
+        @keyframes scaleIn{from{transform:scale(0)}to{transform:scale(1)}}
+
+        /* Order History */
+        .order-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px;border-left:4px solid var(--success)}
+        .order-card .order-header{display:flex;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+        .order-card .order-id{font-weight:700;font-size:14px}
+        .order-card .order-date{font-size:12px;color:var(--text-light)}
+        .order-card .order-items{font-size:13px;color:var(--text-light);margin-bottom:8px}
+        .order-card .order-total{font-size:16px;font-weight:700;color:var(--primary)}
+
+        /* Security Dashboard */
+        .security-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+        .sec-card{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border-top:3px solid}
+        .sec-card h3{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+        .sec-card p{font-size:13px;color:var(--text-light);line-height:1.7}
+        .sec-card .sec-icon{font-size:24px}
+        .sec-card.https{border-top-color:var(--success)}
+        .sec-card.auth{border-top-color:var(--accent)}
+        .sec-card.encrypt{border-top-color:#8B5CF6}
+        .sec-card.session{border-top-color:var(--warning)}
+        .sec-card.csrf{border-top-color:var(--danger)}
+        .sec-card.xss{border-top-color:var(--teal)}
+
+        .sim-note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px}
+
+        .toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 24px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(100px);opacity:0;transition:var(--transition)}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast.success{background:var(--success)}
+
+        .empty-state{text-align:center;padding:48px;color:var(--text-light)}
+        .empty-state p{font-size:14px}
+
+        @media(max-width:768px){
+            .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+            .main{margin-left:0}.menu-toggle{display:block}
+            .content{padding:20px 16px}.topbar{padding:12px 16px}
+            .form-row{grid-template-columns:1fr}
+            .cart-item{flex-wrap:wrap}
+        }
+        @media(max-width:480px){.products-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">🛒 SIMATS Campus Store</div>
+            <div class="course">CSA4315 · CO1 AT3</div>
+        </div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-section="products" onclick="showSection('products')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Products</button>
+            <button class="nav-item" data-section="cart" onclick="showSection('cart')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>Shopping Cart</button>
+            <button class="nav-item" data-section="checkout" onclick="showSection('checkout')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Checkout</button>
+            <button class="nav-item" data-section="orders" onclick="showSection('orders')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Order History</button>
+            <button class="nav-item" data-section="security" onclick="showSection('security')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Security Concepts</button>
+        </div>
+        <div class="sidebar-footer"><a href="../index.html">← Back to Portal Home</a></div>
+    </nav>
+
+    <div class="main">
+        <div class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+            <h2 id="pageTitle">Product Catalogue</h2>
+            <div class="topbar-right">
+                <button class="cart-btn" onclick="showSection('cart')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                    Cart
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+                <span class="demo-badge">Academic Demonstration – No Real Transactions</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Products -->
+            <div id="sec-products" class="section-page">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="prodSearch" placeholder="Search products..." oninput="filterProducts()">
+                    <button class="filter-btn active" data-cat="all" onclick="setProdFilter('all',this)">All</button>
+                    <button class="filter-btn" data-cat="Books" onclick="setProdFilter('Books',this)">Books</button>
+                    <button class="filter-btn" data-cat="Stationery" onclick="setProdFilter('Stationery',this)">Stationery</button>
+                    <button class="filter-btn" data-cat="Electronics" onclick="setProdFilter('Electronics',this)">Electronics</button>
+                    <button class="filter-btn" data-cat="Apparel" onclick="setProdFilter('Apparel',this)">Apparel</button>
+                    <button class="filter-btn" data-cat="Accessories" onclick="setProdFilter('Accessories',this)">Accessories</button>
+                </div>
+                <div class="products-grid" id="productsGrid"></div>
+            </div>
+
+            <!-- Cart -->
+            <div id="sec-cart" class="section-page hidden">
+                <div class="cart-container" id="cartContainer"></div>
+            </div>
+
+            <!-- Checkout -->
+            <div id="sec-checkout" class="section-page hidden">
+                <div class="sim-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span><strong>Academic Demonstration:</strong> No real payment information is collected. No actual transactions are processed. This is a checkout flow simulation only.</span></div>
+                <div id="checkoutContent"></div>
+            </div>
+
+            <!-- Orders -->
+            <div id="sec-orders" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">Order History</div>
+                    <div id="ordersContainer"></div>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div id="sec-security" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>HTTPS & Security Concepts Dashboard</div>
+                    <div class="sim-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Educational explanations of web security concepts. localStorage is used for demo purposes only and does <strong>not</strong> provide real secure authentication.</span></div>
+                    <div class="security-grid" id="securityGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ===== PRODUCT DATA =====
+    const products = [
+        {id:1,name:"Internet Programming Textbook",category:"Books",price:650,stock:25,emoji:"📘"},
+        {id:2,name:"Data Structures with C++",category:"Books",price:550,stock:18,emoji:"📗"},
+        {id:3,name:"Engineering Mathematics",category:"Books",price:480,stock:30,emoji:"📕"},
+        {id:4,name:"Computer Networks (Tanenbaum)",category:"Books",price:720,stock:15,emoji:"📙"},
+        {id:5,name:"Scientific Calculator (Casio)",category:"Electronics",price:1250,stock:40,emoji:"🧮"},
+        {id:6,name:"USB Flash Drive 32GB",category:"Electronics",price:450,stock:50,emoji:"💾"},
+        {id:7,name:"Wireless Mouse",category:"Electronics",price:599,stock:35,emoji:"🖱️"},
+        {id:8,name:"Laptop Sleeve 15.6\"",category:"Accessories",price:899,stock:20,emoji:"💼"},
+        {id:9,name:"Engineering Drawing Kit",category:"Stationery",price:380,stock:45,emoji:"📐"},
+        {id:10,name:"A4 Notebook (5-Pack)",category:"Stationery",price:250,stock:100,emoji:"📓"},
+        {id:11,name:"Mechanical Pencil Set",category:"Stationery",price:180,stock:60,emoji:"✏️"},
+        {id:12,name:"SIMATS College Hoodie",category:"Apparel",price:1200,stock:30,emoji:"🧥"},
+        {id:13,name:"SIMATS Logo T-Shirt",category:"Apparel",price:450,stock:50,emoji:"👕"},
+        {id:14,name:"Lab Coat (White)",category:"Apparel",price:650,stock:40,emoji:"🥼"},
+        {id:15,name:"ID Card Lanyard",category:"Accessories",price:120,stock:80,emoji:"🏷️"},
+        {id:16,name:"Backpack (30L)",category:"Accessories",price:1500,stock:25,emoji:"🎒"}
+    ];
+
+    function getCart() { return JSON.parse(localStorage.getItem('simats_store_cart') || '[]'); }
+    function saveCart(cart) { localStorage.setItem('simats_store_cart', JSON.stringify(cart)); updateCartCount(); }
+    function getOrders() { return JSON.parse(localStorage.getItem('simats_store_orders') || '[]'); }
+    function saveOrders(orders) { localStorage.setItem('simats_store_orders', JSON.stringify(orders)); }
+
+    let currentProdFilter = 'all';
+
+    // ===== NAV =====
+    function showSection(id) {
+        document.querySelectorAll('.section-page').forEach(s => s.classList.add('hidden'));
+        document.getElementById('sec-' + id).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelector(`[data-section="${id}"]`).classList.add('active');
+        const titles = {products:'Product Catalogue',cart:'Shopping Cart',checkout:'Checkout',orders:'Order History',security:'Security Concepts'};
+        document.getElementById('pageTitle').textContent = titles[id] || '';
+        if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+        if (id === 'cart') renderCart();
+        if (id === 'checkout') renderCheckout();
+        if (id === 'orders') renderOrders();
+        if (id === 'security') renderSecurity();
+    }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function updateCartCount() {
+        const cart = getCart();
+        const count = cart.reduce((s, i) => s + i.qty, 0);
+        document.getElementById('cartCount').textContent = count;
+    }
+
+    // ===== PRODUCTS =====
+    function renderProducts() {
+        const search = (document.getElementById('prodSearch')?.value || '').toLowerCase();
+        const filtered = products.filter(p => {
+            const ms = p.name.toLowerCase().includes(search);
+            const mc = currentProdFilter === 'all' || p.category === currentProdFilter;
+            return ms && mc;
+        });
+        document.getElementById('productsGrid').innerHTML = filtered.map(p => `
+            <div class="product-card">
+                <div class="product-img">${p.emoji}</div>
+                <div class="product-body">
+                    <div class="cat">${p.category}</div>
+                    <h3>${p.name}</h3>
+                    <div class="price">₹${p.price.toLocaleString()}</div>
+                    <div class="stock">${p.stock} in stock</div>
+                    <button class="btn btn-success" style="width:100%" onclick="addToCart(${p.id})">Add to Cart</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    function filterProducts() { renderProducts(); }
+    function setProdFilter(cat, btn) {
+        currentProdFilter = cat;
+        document.querySelectorAll('#sec-products .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderProducts();
+    }
+
+    function addToCart(pid) {
+        const product = products.find(p => p.id === pid);
+        if (!product) return;
+        const cart = getCart();
+        const existing = cart.find(i => i.id === pid);
+        if (existing) {
+            existing.qty++;
+        } else {
+            cart.push({id: pid, name: product.name, price: product.price, emoji: product.emoji, qty: 1});
+        }
+        saveCart(cart);
+        showToast(`${product.name} added to cart!`, 'success');
+    }
+
+    // ===== CART =====
+    function renderCart() {
+        const cart = getCart();
+        if (!cart.length) {
+            document.getElementById('cartContainer').innerHTML = '<div class="empty-state"><p style="font-size:48px;margin-bottom:16px">🛒</p><p>Your cart is empty. Browse products to add items!</p><button class="btn btn-primary" style="margin-top:16px" onclick="showSection(\'products\')">Browse Products</button></div>';
+            return;
+        }
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const tax = Math.round(subtotal * 0.18);
+        const total = subtotal + tax;
+
+        document.getElementById('cartContainer').innerHTML = `
+            ${cart.map((item, i) => `
+                <div class="cart-item">
+                    <div class="ci-emoji">${item.emoji}</div>
+                    <div class="ci-info"><h4>${item.name}</h4><p>₹${item.price.toLocaleString()} each</p></div>
+                    <div class="ci-qty">
+                        <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
+                        <span style="font-weight:700;min-width:24px;text-align:center">${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
+                    </div>
+                    <div class="ci-price">₹${(item.price * item.qty).toLocaleString()}</div>
+                    <button class="ci-remove" onclick="removeFromCart(${i})" title="Remove">✕</button>
+                </div>
+            `).join('')}
+            <div class="cart-summary">
+                <div class="row"><span>Subtotal</span><span>₹${subtotal.toLocaleString()}</span></div>
+                <div class="row"><span>GST (18%)</span><span>₹${tax.toLocaleString()}</span></div>
+                <div class="row total"><span>Total</span><span>₹${total.toLocaleString()}</span></div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+                <button class="btn btn-success" onclick="showSection('checkout')">Proceed to Checkout</button>
+                <button class="btn btn-outline" onclick="showSection('products')">Continue Shopping</button>
+                <button class="btn btn-danger btn-sm" onclick="clearCart()">Clear Cart</button>
+            </div>
+        `;
+    }
+
+    function changeQty(index, delta) {
+        const cart = getCart();
+        cart[index].qty += delta;
+        if (cart[index].qty <= 0) cart.splice(index, 1);
+        saveCart(cart);
+        renderCart();
+    }
+
+    function removeFromCart(index) {
+        const cart = getCart();
+        cart.splice(index, 1);
+        saveCart(cart);
+        renderCart();
+        showToast('Item removed from cart');
+    }
+
+    function clearCart() {
+        saveCart([]);
+        renderCart();
+        showToast('Cart cleared');
+    }
+
+    // ===== CHECKOUT =====
+    function renderCheckout() {
+        const cart = getCart();
+        if (!cart.length) {
+            document.getElementById('checkoutContent').innerHTML = '<div class="empty-state"><p>Your cart is empty. Add products first!</p></div>';
+            return;
+        }
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const tax = Math.round(subtotal * 0.18);
+        const total = subtotal + tax;
+
+        document.getElementById('checkoutContent').innerHTML = `
+            <div class="checkout-card">
+                <h3 style="margin-bottom:20px">Checkout (Demo)</h3>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="coName" placeholder="Enter your name" value="Demo Student">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="coEmail" placeholder="student@simats.edu" value="demo@simats.edu">
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="coDept"><option>Computer Science</option><option>ECE</option><option>Mechanical</option><option>Civil</option><option>IT</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Delivery Address (Campus)</label>
+                    <input type="text" id="coAddr" placeholder="Room / Block" value="Room 204, Block C">
+                </div>
+                <div class="cart-summary" style="margin:20px 0">
+                    <div class="row"><span>Items (${cart.reduce((s,i)=>s+i.qty,0)})</span><span>₹${subtotal.toLocaleString()}</span></div>
+                    <div class="row"><span>GST (18%)</span><span>₹${tax.toLocaleString()}</span></div>
+                    <div class="row total"><span>Total</span><span>₹${total.toLocaleString()}</span></div>
+                </div>
+                <p style="font-size:12px;color:var(--text-light);margin-bottom:16px;padding:12px;background:var(--bg);border-radius:8px">
+                    🔒 <strong>Note:</strong> This is an academic demonstration. No real payment is processed. No card details are collected.
+                </p>
+                <button class="btn btn-success" style="width:100%;padding:14px;font-size:15px" onclick="placeOrder()">Place Demo Order</button>
+            </div>
+        `;
+    }
+
+    function placeOrder() {
+        const name = document.getElementById('coName').value.trim();
+        const email = document.getElementById('coEmail').value.trim();
+        if (!name || !email) { showToast('Please fill in all fields'); return; }
+
+        const cart = getCart();
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const tax = Math.round(subtotal * 0.18);
+        const total = subtotal + tax;
+
+        const order = {
+            id: 'ORD-' + Date.now().toString().slice(-6),
+            date: new Date().toISOString().split('T')[0],
+            items: [...cart],
+            subtotal, tax, total,
+            customer: name,
+            email,
+            status: 'Confirmed (Demo)'
+        };
+
+        const orders = getOrders();
+        orders.push(order);
+        saveOrders(orders);
+        saveCart([]);
+
+        document.getElementById('checkoutContent').innerHTML = `
+            <div class="order-success">
+                <div class="check">✓</div>
+                <h2 style="font-size:24px;font-weight:800;margin-bottom:8px">Order Placed Successfully!</h2>
+                <p style="color:var(--text-light);margin-bottom:20px">This is a demo order. No real transaction occurred.</p>
+                <div style="background:var(--bg);border-radius:12px;padding:20px;display:inline-block;text-align:left">
+                    <p style="font-size:14px"><strong>Order ID:</strong> ${order.id}</p>
+                    <p style="font-size:14px"><strong>Total:</strong> ₹${total.toLocaleString()}</p>
+                    <p style="font-size:14px"><strong>Items:</strong> ${cart.length}</p>
+                    <p style="font-size:14px"><strong>Status:</strong> Confirmed (Demo)</p>
+                </div>
+                <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                    <button class="btn btn-primary" onclick="showSection('orders')">View Orders</button>
+                    <button class="btn btn-outline" onclick="showSection('products')">Continue Shopping</button>
+                </div>
+            </div>
+        `;
+        showToast('Demo order placed successfully!', 'success');
+    }
+
+    // ===== ORDERS =====
+    function renderOrders() {
+        const orders = getOrders();
+        if (!orders.length) {
+            document.getElementById('ordersContainer').innerHTML = '<div class="empty-state"><p>No orders yet. Start shopping!</p></div>';
+            return;
+        }
+        document.getElementById('ordersContainer').innerHTML = orders.slice().reverse().map(o => `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-id">${o.id}</span>
+                    <span class="order-date">${o.date} · ${o.customer}</span>
+                </div>
+                <div class="order-items">${o.items.map(i => `${i.emoji} ${i.name} ×${i.qty}`).join(' · ')}</div>
+                <div class="order-total">Total: ₹${o.total.toLocaleString()} <span style="font-size:12px;font-weight:500;color:var(--success);margin-left:8px">✓ ${o.status}</span></div>
+            </div>
+        `).join('');
+    }
+
+    // ===== SECURITY =====
+    function renderSecurity() {
+        const concepts = [
+            {cls:'https',icon:'🔒',title:'HTTPS vs HTTP',desc:'<strong>HTTP</strong> (port 80) transmits data in plaintext. <strong>HTTPS</strong> (port 443) encrypts data using TLS/SSL certificates, preventing eavesdropping and man-in-the-middle attacks. Always use HTTPS for sensitive data like login credentials and payment info.'},
+            {cls:'auth',icon:'🔑',title:'Authentication & Authorization',desc:'<strong>Authentication</strong> verifies who you are (login with credentials). <strong>Authorization</strong> determines what you can access (role-based permissions). Multi-factor authentication (MFA) adds extra security layers.'},
+            {cls:'encrypt',icon:'🛡️',title:'Data Encryption',desc:'Encryption transforms readable data (plaintext) into unreadable ciphertext using algorithms (AES-256, RSA). <strong>Symmetric encryption</strong> uses one key; <strong>asymmetric</strong> uses public/private key pairs (used in SSL/TLS).'},
+            {cls:'session',icon:'🍪',title:'Secure Sessions & Cookies',desc:'Sessions track user state. Secure cookies should have <code>HttpOnly</code>, <code>Secure</code>, and <code>SameSite</code> flags. Session IDs must be random and regenerated after login to prevent session fixation attacks.'},
+            {cls:'csrf',icon:'🚫',title:'CSRF Protection',desc:'Cross-Site Request Forgery tricks users into making unwanted requests. Protection includes <strong>CSRF tokens</strong> (unique per session/form), <strong>SameSite cookies</strong>, and verifying the <strong>Origin/Referer</strong> headers.'},
+            {cls:'xss',icon:'⚠️',title:'XSS Prevention',desc:'Cross-Site Scripting injects malicious scripts. Prevent by: <strong>input validation/sanitization</strong>, <strong>output encoding</strong> (escape HTML entities), <strong>Content-Security-Policy</strong> headers, and never using <code>innerHTML</code> with user input.'}
+        ];
+        document.getElementById('securityGrid').innerHTML = concepts.map(c => `
+            <div class="sec-card ${c.cls}">
+                <h3><span class="sec-icon">${c.icon}</span> ${c.title}</h3>
+                <p>${c.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    // ===== TOAST =====
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + (type || '') + ' show';
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ===== INIT =====
+    updateCartCount();
+    renderProducts();
+    renderSecurity();
+    </script>
+</body>
+</html>

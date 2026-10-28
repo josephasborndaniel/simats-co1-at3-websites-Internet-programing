@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIMATS Examination & Results Portal – Case Studies 33 & 36: HTTP Diagnostics and Performance">
+    <title>Examination & Results Portal – SIMATS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--primary:#123A63;--secondary:#2463A0;--accent:#0EA5E9;--teal:#14B8A6;--bg:#F5F7FB;--card:#fff;--text:#1E293B;--text-light:#64748B;--border:#E2E8F0;--success:#10B981;--warning:#F59E0B;--danger:#EF4444;--shadow:0 4px 24px rgba(18,58,99,.08);--radius:14px;--transition:all .3s cubic-bezier(.4,0,.2,1)}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+        .sidebar{width:260px;background:linear-gradient(180deg,#7C2D12,#9A3412);color:#fff;position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform .3s ease}
+        .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+        .sidebar-header .brand{font-size:14px;font-weight:700}
+        .sidebar-header .course{font-size:11px;opacity:.7;margin-top:4px}
+        .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);transition:var(--transition);margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+        .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.12);color:#fff}
+        .nav-item.active{background:rgba(245,158,11,.3)}
+        .nav-item svg{width:18px;height:18px;flex-shrink:0}
+        .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.5;text-align:center}
+        .sidebar-footer a{color:rgba(255,255,255,.7);text-decoration:none}.sidebar-footer a:hover{color:#fff}
+        .main{margin-left:260px;flex:1;min-height:100vh}
+        .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .topbar h2{font-size:18px;font-weight:700}
+        .demo-badge{font-size:11px;font-weight:600;padding:5px 14px;background:rgba(245,158,11,.1);color:#D97706;border-radius:20px}
+        .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}.menu-toggle svg{width:24px;height:24px;color:var(--text)}
+        .content{padding:28px 32px}
+        .hidden{display:none!important}
+        .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;margin-bottom:32px}
+        .stat-card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);transition:var(--transition)}
+        .stat-card:hover{transform:translateY(-3px)}
+        .stat-card .label{font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px}
+        .stat-card .value{font-size:28px;font-weight:800;margin-top:6px}
+        .stat-card .sub{font-size:12px;color:var(--text-light);margin-top:4px}
+        .section{margin-bottom:32px}
+        .section-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .section-title svg{width:20px;height:20px;color:var(--accent)}
+
+        .search-input{width:100%;max-width:400px;padding:10px 16px;border:2px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;transition:var(--transition);background:var(--card);margin-bottom:20px}
+        .search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+
+        .table-wrap{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;border:1px solid rgba(0,0,0,.04)}
+        table{width:100%;border-collapse:collapse}
+        th{background:var(--bg);padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+        td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border)}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:rgba(14,165,233,.03)}
+
+        .btn{padding:10px 22px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition)}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(18,58,99,.3)}
+        .btn-outline{background:transparent;border:2px solid var(--border);color:var(--text)}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+        .btn-success{background:linear-gradient(135deg,#10B981,#14B8A6);color:#fff}
+        .btn-danger{background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff}
+        .btn-warning{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff}
+
+        .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
+        .badge-pass{background:rgba(16,185,129,.1);color:#059669}
+        .badge-fail{background:rgba(239,68,68,.1);color:#DC2626}
+
+        /* Login */
+        .login-container{display:flex;align-items:center;justify-content:center;min-height:60vh}
+        .login-card{background:var(--card);border-radius:var(--radius);padding:40px;box-shadow:var(--shadow);max-width:420px;width:100%;text-align:center}
+        .login-card h2{font-size:22px;font-weight:800;margin-bottom:8px;color:var(--primary)}
+        .login-card .login-sub{font-size:13px;color:var(--text-light);margin-bottom:24px}
+        .login-card .form-group{margin-bottom:16px;text-align:left}
+        .login-card label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+        .login-card input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;transition:var(--transition)}
+        .login-card input:focus{outline:none;border-color:var(--accent)}
+        .login-error{color:var(--danger);font-size:12px;margin-top:8px;display:none}
+        .demo-creds{background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.15);border-radius:10px;padding:14px;margin-bottom:20px;font-size:12px;text-align:left;color:var(--text-light)}
+        .demo-creds strong{color:var(--text)}
+        .user-bar{display:flex;align-items:center;gap:12px}
+        .user-bar .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--teal));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+        .user-bar .user-info{font-size:13px;font-weight:600}
+        .user-bar .user-info span{display:block;font-size:11px;font-weight:400;color:var(--text-light)}
+
+        /* Results */
+        .result-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:24px}
+        .result-card{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);text-align:center;border-top:3px solid}
+        .result-card.gpa{border-top-color:var(--accent)}
+        .result-card.cgpa{border-top-color:var(--teal)}
+        .result-card.credits{border-top-color:var(--warning)}
+        .result-card .rc-value{font-size:36px;font-weight:800;margin:8px 0}
+        .result-card .rc-label{font-size:12px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px}
+
+        /* HTTP codes */
+        .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+        .http-card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border-left:4px solid;cursor:pointer;transition:var(--transition)}
+        .http-card:hover{transform:translateY(-3px)}
+        .http-card.c200{border-left-color:var(--success)}
+        .http-card.c403{border-left-color:var(--warning)}
+        .http-card.c404{border-left-color:var(--danger)}
+        .http-card.c500{border-left-color:#8B5CF6}
+        .http-card .code{font-size:28px;font-weight:800;margin-bottom:4px}
+        .http-card.c200 .code{color:var(--success)}
+        .http-card.c403 .code{color:var(--warning)}
+        .http-card.c404 .code{color:var(--danger)}
+        .http-card.c500 .code{color:#8B5CF6}
+        .http-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+        .http-card p{font-size:12px;color:var(--text-light);line-height:1.6}
+
+        /* Performance */
+        .perf-controls{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;align-items:flex-end}
+        .perf-controls .form-group{margin:0}
+        .perf-controls label{display:block;font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:6px}
+        .perf-controls input[type=range]{width:200px;accent-color:var(--accent)}
+        .perf-controls .range-val{font-size:14px;font-weight:700;color:var(--accent)}
+        .perf-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+        .metric{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);text-align:center}
+        .metric .m-value{font-size:24px;font-weight:800;margin:6px 0}
+        .metric .m-label{font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase}
+        .metric .m-bar{height:6px;background:var(--bg);border-radius:3px;margin-top:8px;overflow:hidden}
+        .metric .m-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+        .opt-toggles{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+        .opt-toggle{display:flex;align-items:center;gap:8px;padding:10px 18px;background:var(--card);border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;transition:var(--transition)}
+        .opt-toggle.on{border-color:var(--success);background:rgba(16,185,129,.06);color:var(--success)}
+        .opt-toggle .toggle-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);transition:var(--transition)}
+        .opt-toggle.on .toggle-dot{background:var(--success);border-color:var(--success)}
+
+        .sim-note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px}
+        .sim-note svg{width:20px;height:20px;flex-shrink:0;color:#D97706}
+
+        .toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 24px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(100px);opacity:0;transition:var(--transition)}
+        .toast.show{transform:translateY(0);opacity:1}
+
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:var(--transition)}
+        .modal-overlay.show{opacity:1;pointer-events:all}
+        .modal{background:var(--card);border-radius:var(--radius);padding:32px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;transform:scale(.9);transition:var(--transition)}
+        .modal-overlay.show .modal{transform:scale(1)}
+        .modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+        .modal p{font-size:13px;color:var(--text-light);line-height:1.7;margin-bottom:12px}
+        .modal-close{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light)}
+
+        @media(max-width:768px){
+            .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+            .main{margin-left:0}.menu-toggle{display:block}
+            .content{padding:20px 16px}.topbar{padding:12px 16px}
+            .stats-row{grid-template-columns:repeat(2,1fr)}
+        }
+        @media(max-width:480px){.stats-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">📝 SIMATS Exams</div>
+            <div class="course">CSA4315 · CO1 AT3</div>
+        </div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-section="login" onclick="showSection('login')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Student Login</button>
+            <button class="nav-item" data-section="timetable" onclick="showSection('timetable')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Timetable</button>
+            <button class="nav-item" data-section="results" onclick="showSection('results')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Results</button>
+            <button class="nav-item" data-section="http" onclick="showSection('http')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>HTTP Status Codes</button>
+            <button class="nav-item" data-section="performance" onclick="showSection('performance')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Performance Monitor</button>
+        </div>
+        <div class="sidebar-footer"><a href="../index.html">← Back to Portal Home</a></div>
+    </nav>
+
+    <div class="main">
+        <div class="topbar">
+            <button class="menu-toggle" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+            <h2 id="pageTitle">Student Login</h2>
+            <div style="display:flex;align-items:center;gap:12px">
+                <div class="user-bar hidden" id="userBar">
+                    <div class="avatar" id="userAvatar"></div>
+                    <div class="user-info" id="userInfo"></div>
+                </div>
+                <span class="demo-badge">📝 Simulation</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Login -->
+            <div id="sec-login" class="section-page">
+                <div class="login-container">
+                    <div class="login-card">
+                        <h2>🎓 Student Portal Login</h2>
+                        <p class="login-sub">SIMATS Examination & Results System</p>
+                        <div class="demo-creds">
+                            <strong>Demo Credentials:</strong><br>
+                            Student ID: <strong>CSE001</strong> · Password: <strong>demo123</strong><br>
+                            Student ID: <strong>ECE002</strong> · Password: <strong>demo123</strong><br>
+                            Student ID: <strong>IT003</strong> · Password: <strong>demo123</strong>
+                        </div>
+                        <div class="form-group">
+                            <label>Student ID</label>
+                            <input type="text" id="loginId" placeholder="Enter Student ID" value="CSE001">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="loginPass" placeholder="Enter Password" value="demo123">
+                        </div>
+                        <div class="login-error" id="loginError">Invalid credentials. Please use the demo credentials above.</div>
+                        <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;margin-top:8px" onclick="doLogin()">Sign In</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timetable -->
+            <div id="sec-timetable" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Examination Timetable – November 2026</div>
+                    <div class="table-wrap">
+                        <table><thead><tr><th>Date</th><th>Day</th><th>Subject</th><th>Code</th><th>Time</th><th>Duration</th><th>Venue</th></tr></thead>
+                        <tbody id="ttBody"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="sec-results" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">Examination Results</div>
+                    <input type="text" class="search-input" id="resultSearch" placeholder="Search by subject name..." oninput="filterResults()">
+                    <div class="result-summary" id="resultSummary"></div>
+                    <div class="table-wrap">
+                        <table><thead><tr><th>Subject</th><th>Code</th><th>Internal</th><th>External</th><th>Total</th><th>Grade</th><th>Credits</th><th>Status</th></tr></thead>
+                        <tbody id="resultBody"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HTTP Status Codes -->
+            <div id="sec-http" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">HTTP Status Code Troubleshooting</div>
+                    <div class="sim-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span><strong>Educational Demonstration:</strong> These HTTP status codes illustrate real web server responses. Click each card to see detailed troubleshooting.</span></div>
+                    <div class="cards-grid" id="httpCards"></div>
+                    <div style="margin-top:24px">
+                        <div class="section-title">Live HTTP Simulation</div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap">
+                            <button class="btn btn-success" onclick="simHTTP(200)">Simulate 200 OK</button>
+                            <button class="btn btn-warning" onclick="simHTTP(403)">Simulate 403 Forbidden</button>
+                            <button class="btn btn-danger" onclick="simHTTP(404)">Simulate 404 Not Found</button>
+                            <button class="btn" style="background:linear-gradient(135deg,#8B5CF6,#6366F1);color:#fff" onclick="simHTTP(500)">Simulate 500 Server Error</button>
+                        </div>
+                        <div id="httpSimResult" style="margin-top:16px;padding:18px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);display:none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Monitor -->
+            <div id="sec-performance" class="section-page hidden">
+                <div class="section">
+                    <div class="section-title">Server Performance Monitoring Dashboard</div>
+                    <div class="sim-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span><strong>Simulation Notice:</strong> All performance values are <u>illustrative simulated values</u>, not actual server measurements. This demonstrates optimization concepts.</span></div>
+
+                    <div class="perf-controls">
+                        <div class="form-group">
+                            <label>Concurrent Users: <span class="range-val" id="userCountDisplay">100</span></label>
+                            <input type="range" min="100" max="2000" step="100" value="100" id="userSlider" oninput="updatePerf()">
+                        </div>
+                    </div>
+
+                    <h4 style="font-size:14px;margin-bottom:12px">Optimization Controls</h4>
+                    <div class="opt-toggles">
+                        <div class="opt-toggle" id="opt-cache" onclick="toggleOpt('cache')"><div class="toggle-dot"></div>Browser Caching</div>
+                        <div class="opt-toggle" id="opt-db" onclick="toggleOpt('db')"><div class="toggle-dot"></div>Database Indexing</div>
+                        <div class="opt-toggle" id="opt-lb" onclick="toggleOpt('lb')"><div class="toggle-dot"></div>Load Balancer</div>
+                        <div class="opt-toggle" id="opt-cdn" onclick="toggleOpt('cdn')"><div class="toggle-dot"></div>CDN Enabled</div>
+                    </div>
+
+                    <div class="perf-metrics" id="perfMetrics"></div>
+
+                    <div class="table-wrap" style="margin-top:20px">
+                        <table><thead><tr><th>Users</th><th>Base Response (ms)</th><th>Optimized Response (ms)</th><th>CPU Usage</th><th>Memory</th><th>Status</th></tr></thead>
+                        <tbody id="perfTableBody"></tbody></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle"></h3>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ===== DATA =====
+    const students = {
+        'CSE001': {name:'Arun Kumar',dept:'Computer Science',sem:'5th Semester',year:'III Year'},
+        'ECE002': {name:'Priya Sharma',dept:'Electronics & Communication',sem:'5th Semester',year:'III Year'},
+        'IT003': {name:'Vikram Raj',dept:'Information Technology',sem:'5th Semester',year:'III Year'}
+    };
+
+    const timetable = [
+        {date:'Nov 15, 2026',day:'Monday',subject:'Internet Programming',code:'CSA4315',time:'10:00 AM – 1:00 PM',duration:'3 hrs',venue:'Hall A1'},
+        {date:'Nov 17, 2026',day:'Wednesday',subject:'Data Structures & Algorithms',code:'CSA3210',time:'10:00 AM – 1:00 PM',duration:'3 hrs',venue:'Hall A2'},
+        {date:'Nov 19, 2026',day:'Friday',subject:'Database Management Systems',code:'CSA4320',time:'2:00 PM – 5:00 PM',duration:'3 hrs',venue:'Hall B1'},
+        {date:'Nov 21, 2026',day:'Monday',subject:'Computer Networks',code:'CSA4318',time:'10:00 AM – 1:00 PM',duration:'3 hrs',venue:'Hall A1'},
+        {date:'Nov 23, 2026',day:'Wednesday',subject:'Operating Systems',code:'CSA3215',time:'2:00 PM – 5:00 PM',duration:'3 hrs',venue:'Hall B2'},
+        {date:'Nov 25, 2026',day:'Friday',subject:'Software Engineering',code:'CSA4325',time:'10:00 AM – 1:00 PM',duration:'3 hrs',venue:'Hall A3'}
+    ];
+
+    const results = [
+        {subject:'Internet Programming',code:'CSA4315',internal:42,external:78,total:0,grade:'',credits:4,passed:true},
+        {subject:'Data Structures',code:'CSA3210',internal:38,external:65,total:0,grade:'',credits:4,passed:true},
+        {subject:'Database Management',code:'CSA4320',internal:45,external:82,total:0,grade:'',credits:4,passed:true},
+        {subject:'Computer Networks',code:'CSA4318',internal:35,external:58,total:0,grade:'',credits:3,passed:true},
+        {subject:'Operating Systems',code:'CSA3215',internal:40,external:72,total:0,grade:'',credits:3,passed:true},
+        {subject:'Software Engineering',code:'CSA4325',internal:44,external:85,total:0,grade:'',credits:3,passed:true},
+        {subject:'Environmental Science',code:'GEA1001',internal:30,external:45,total:0,grade:'',credits:2,passed:true}
+    ];
+
+    // Calculate results
+    results.forEach(r => {
+        r.total = r.internal + r.external;
+        if (r.total >= 90) r.grade = 'O';
+        else if (r.total >= 80) r.grade = 'A+';
+        else if (r.total >= 70) r.grade = 'A';
+        else if (r.total >= 60) r.grade = 'B+';
+        else if (r.total >= 50) r.grade = 'B';
+        else { r.grade = 'F'; r.passed = false; }
+    });
+
+    const httpCodes = [
+        {code:200,name:'OK',cls:'c200',desc:'The request was successful. The server processed the request and returned the expected response.',
+         troubleshoot:'This is a success response. The server found the requested resource and returned it correctly. Headers include Content-Type, Content-Length, and Cache-Control.'},
+        {code:403,name:'Forbidden',cls:'c403',desc:'The server understood the request but refuses to authorize it. Access permissions are insufficient.',
+         troubleshoot:'<strong>Causes:</strong><br>• File/directory permissions too restrictive<br>• .htaccess blocking access<br>• IP-based access control<br>• Missing authentication<br><strong>Fix:</strong> Check chmod permissions (755 for dirs, 644 for files), verify .htaccess rules, ensure proper authentication headers.'},
+        {code:404,name:'Not Found',cls:'c404',desc:'The server cannot find the requested resource. The URL may be incorrect or the page has been removed.',
+         troubleshoot:'<strong>Causes:</strong><br>• Mistyped URL<br>• Page deleted or moved<br>• Incorrect routing configuration<br>• Missing rewrite rules<br><strong>Fix:</strong> Verify URL spelling, check server routing config, set up redirects for moved pages, create custom 404 error page.'},
+        {code:500,name:'Internal Server Error',cls:'c500',desc:'The server encountered an unexpected condition that prevented it from fulfilling the request.',
+         troubleshoot:'<strong>Causes:</strong><br>• PHP syntax error<br>• Misconfigured .htaccess<br>• Server resource exhaustion<br>• Database connection failure<br><strong>Fix:</strong> Check error logs (error_log), fix PHP syntax, verify database credentials, increase memory_limit in php.ini.'}
+    ];
+
+    let loggedIn = false;
+    let currentUser = null;
+    let optimizations = {cache:false,db:false,lb:false,cdn:false};
+
+    // ===== NAV =====
+    function showSection(id) {
+        if (['timetable','results'].includes(id) && !loggedIn) {
+            showToast('Please login first!');
+            showSection('login');
+            return;
+        }
+        document.querySelectorAll('.section-page').forEach(s=>s.classList.add('hidden'));
+        document.getElementById('sec-'+id).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+        document.querySelector(`[data-section="${id}"]`).classList.add('active');
+        const titles={login:'Student Login',timetable:'Examination Timetable',results:'Examination Results',http:'HTTP Status Codes',performance:'Performance Monitor'};
+        document.getElementById('pageTitle').textContent=titles[id]||'';
+        if(window.innerWidth<=768)document.getElementById('sidebar').classList.remove('open');
+    }
+    function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
+
+    // ===== LOGIN =====
+    function doLogin(){
+        const id=document.getElementById('loginId').value.trim().toUpperCase();
+        const pass=document.getElementById('loginPass').value;
+        if(students[id]&&pass==='demo123'){
+            loggedIn=true;
+            currentUser={id,...students[id]};
+            document.getElementById('loginError').style.display='none';
+            document.getElementById('userBar').classList.remove('hidden');
+            document.getElementById('userAvatar').textContent=currentUser.name[0];
+            document.getElementById('userInfo').innerHTML=`${currentUser.name}<span>${currentUser.dept}</span>`;
+            renderTimetable();
+            renderResults();
+            showSection('timetable');
+            showToast(`Welcome, ${currentUser.name}!`);
+        } else {
+            document.getElementById('loginError').style.display='block';
+        }
+    }
+
+    // ===== TIMETABLE =====
+    function renderTimetable(){
+        document.getElementById('ttBody').innerHTML=timetable.map(t=>`
+            <tr><td><strong>${t.date}</strong></td><td>${t.day}</td><td><strong>${t.subject}</strong></td>
+            <td><code style="background:var(--bg);padding:2px 8px;border-radius:4px;font-size:11px">${t.code}</code></td>
+            <td>${t.time}</td><td>${t.duration}</td><td>${t.venue}</td></tr>
+        `).join('');
+    }
+
+    // ===== RESULTS =====
+    function renderResults(){
+        const search=(document.getElementById('resultSearch')?.value||'').toLowerCase();
+        const filtered=results.filter(r=>r.subject.toLowerCase().includes(search));
+
+        // GPA calculation
+        const gradePoints={'O':10,'A+':9,'A':8,'B+':7,'B':6,'F':0};
+        let totalCredits=0,totalGP=0;
+        results.forEach(r=>{totalCredits+=r.credits;totalGP+=r.credits*(gradePoints[r.grade]||0)});
+        const gpa=(totalGP/totalCredits).toFixed(2);
+        const cgpa=(parseFloat(gpa)*0.95+0.2).toFixed(2); // Simulated CGPA
+
+        document.getElementById('resultSummary').innerHTML=`
+            <div class="result-card gpa"><div class="rc-label">Current GPA</div><div class="rc-value" style="color:var(--accent)">${gpa}</div><div style="font-size:12px;color:var(--text-light)">Semester 5</div></div>
+            <div class="result-card cgpa"><div class="rc-label">CGPA</div><div class="rc-value" style="color:var(--teal)">${cgpa}</div><div style="font-size:12px;color:var(--text-light)">Cumulative</div></div>
+            <div class="result-card credits"><div class="rc-label">Total Credits</div><div class="rc-value" style="color:var(--warning)">${totalCredits}</div><div style="font-size:12px;color:var(--text-light)">This semester</div></div>
+        `;
+
+        document.getElementById('resultBody').innerHTML=filtered.map(r=>`
+            <tr><td><strong>${r.subject}</strong></td>
+            <td><code style="font-size:11px">${r.code}</code></td>
+            <td>${r.internal}/50</td><td>${r.external}/100</td>
+            <td><strong>${r.total}/150</strong></td>
+            <td><span style="font-size:14px;font-weight:800;color:${r.passed?'var(--success)':'var(--danger)'}">${r.grade}</span></td>
+            <td>${r.credits}</td>
+            <td><span class="badge ${r.passed?'badge-pass':'badge-fail'}">${r.passed?'Pass':'Fail'}</span></td></tr>
+        `).join('');
+    }
+    function filterResults(){renderResults()}
+
+    // ===== HTTP CODES =====
+    function renderHTTPCards(){
+        document.getElementById('httpCards').innerHTML=httpCodes.map(h=>`
+            <div class="http-card ${h.cls}" onclick="showHTTPDetail(${h.code})">
+                <div class="code">${h.code}</div>
+                <h3>${h.name}</h3>
+                <p>${h.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    function showHTTPDetail(code){
+        const h=httpCodes.find(x=>x.code===code);
+        document.getElementById('modalTitle').textContent=`HTTP ${h.code} – ${h.name}`;
+        document.getElementById('modalContent').innerHTML=`<p>${h.desc}</p><h4 style="margin-top:16px;font-size:14px">Troubleshooting:</h4><p>${h.troubleshoot}</p>`;
+        document.getElementById('modal').classList.add('show');
+    }
+
+    function simHTTP(code){
+        const colors={200:'var(--success)',403:'var(--warning)',404:'var(--danger)',500:'#8B5CF6'};
+        const msgs={
+            200:'<strong>HTTP/1.1 200 OK</strong><br>Content-Type: text/html; charset=UTF-8<br>Content-Length: 15234<br>Cache-Control: max-age=3600<br><br>✅ Request successful. Server returned examination portal page.',
+            403:'<strong>HTTP/1.1 403 Forbidden</strong><br>Content-Type: text/html<br><br>🔒 Access denied. You do not have permission to access /admin/results on this server. Check file permissions and authentication.',
+            404:'<strong>HTTP/1.1 404 Not Found</strong><br>Content-Type: text/html<br><br>❌ The requested URL /exam/results2025 was not found on this server. Verify the URL or check if the page has been moved.',
+            500:'<strong>HTTP/1.1 500 Internal Server Error</strong><br>Content-Type: text/html<br><br>💥 Server encountered an internal error. Check PHP error logs, database connections, and memory limits.'
+        };
+        const el=document.getElementById('httpSimResult');
+        el.style.display='block';
+        el.style.borderLeft=`4px solid ${colors[code]}`;
+        el.innerHTML=`<div style="font-family:monospace;font-size:13px;line-height:1.8">${msgs[code]}</div>`;
+    }
+
+    // ===== PERFORMANCE =====
+    function updatePerf(){
+        const users=parseInt(document.getElementById('userSlider').value);
+        document.getElementById('userCountDisplay').textContent=users;
+
+        let cacheReduction=optimizations.cache?0.7:1;
+        let dbReduction=optimizations.db?0.75:1;
+        let lbReduction=optimizations.lb?0.6:1;
+        let cdnReduction=optimizations.cdn?0.65:1;
+
+        const baseResponse=Math.round(50+users*2.5+(users>1000?users*1.5:0));
+        const optimizedResponse=Math.round(baseResponse*cacheReduction*dbReduction*lbReduction*cdnReduction);
+        const baseCPU=Math.min(99,Math.round(10+users*0.045+(users>1000?users*0.02:0)));
+        const optCPU=Math.min(99,Math.round(baseCPU*cacheReduction*lbReduction));
+        const baseMemory=Math.min(98,Math.round(15+users*0.035));
+        const optMemory=Math.min(95,Math.round(baseMemory*dbReduction*0.9));
+        const throughput=Math.round(users/(optimizedResponse/1000));
+
+        const cpuColor=optCPU>80?'var(--danger)':optCPU>60?'var(--warning)':'var(--success)';
+        const respColor=optimizedResponse>2000?'var(--danger)':optimizedResponse>800?'var(--warning)':'var(--success)';
+
+        document.getElementById('perfMetrics').innerHTML=`
+            <div class="metric"><div class="m-label">Response Time</div><div class="m-value" style="color:${respColor}">${optimizedResponse}ms</div><div class="m-bar"><div class="m-bar-fill" style="width:${Math.min(100,optimizedResponse/50)}%;background:${respColor}"></div></div></div>
+            <div class="metric"><div class="m-label">CPU Usage</div><div class="m-value" style="color:${cpuColor}">${optCPU}%</div><div class="m-bar"><div class="m-bar-fill" style="width:${optCPU}%;background:${cpuColor}"></div></div></div>
+            <div class="metric"><div class="m-label">Memory Usage</div><div class="m-value" style="color:var(--accent)">${optMemory}%</div><div class="m-bar"><div class="m-bar-fill" style="width:${optMemory}%;background:var(--accent)"></div></div></div>
+            <div class="metric"><div class="m-label">Throughput</div><div class="m-value" style="color:var(--teal)">${throughput} req/s</div><div class="m-bar"><div class="m-bar-fill" style="width:${Math.min(100,throughput/20)}%;background:var(--teal)"></div></div></div>
+        `;
+
+        // Table for ranges
+        const levels=[100,500,1000,1500,2000];
+        document.getElementById('perfTableBody').innerHTML=levels.map(u=>{
+            const br=Math.round(50+u*2.5+(u>1000?u*1.5:0));
+            const or=Math.round(br*cacheReduction*dbReduction*lbReduction*cdnReduction);
+            const cpu=Math.min(99,Math.round(10+u*0.045+(u>1000?u*0.02:0)));
+            const mem=Math.min(98,Math.round(15+u*0.035));
+            const status=or<500?'Healthy':or<1500?'Moderate':'Critical';
+            const sColor=status==='Healthy'?'badge-pass':status==='Critical'?'badge-fail':'';
+            return `<tr ${u===users?'style="background:rgba(14,165,233,.06)"':''}>
+                <td><strong>${u.toLocaleString()}</strong></td><td>${br}ms</td><td>${or}ms</td>
+                <td>${cpu}%</td><td>${mem}%</td>
+                <td><span class="badge ${sColor}" style="${!sColor?'background:rgba(245,158,11,.1);color:#D97706':''}">${status}</span></td></tr>`;
+        }).join('');
+    }
+
+    function toggleOpt(key){
+        optimizations[key]=!optimizations[key];
+        document.getElementById('opt-'+key).classList.toggle('on');
+        updatePerf();
+    }
+
+    // ===== MODAL =====
+    function closeModal(){document.getElementById('modal').classList.remove('show')}
+    document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+
+    function showToast(msg){
+        const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'),3000);
+    }
+
+    // ===== INIT =====
+    renderHTTPCards();
+    updatePerf();
+    </script>
+</body>
+</html>
